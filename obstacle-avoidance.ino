@@ -18,6 +18,7 @@ int angles[numAngles] = {0, 90, 180};  // only three directions for now
 int* lookAround();
 int lookInDirection(int angle);
 void resetServo();
+int chooseAction(int *obs);
 
 
 void setup() {
@@ -32,24 +33,30 @@ void setup() {
 void loop() {
   int *obs = lookAround();
 
-  if (obs[1] > 10) {
-    Serial.println("Moving forward");
-  } else {
-    if (obs[0] >= obs[2]) {
-      Serial.println("Moving right");
-    } else {
-      Serial.print("Moving left");
-    }
-  }
-  
-//  for(int i = 0; i < numAngles; i++) {
-//    Serial.println("Agnle is " + String(angles[i]));
-//    Serial.println("Distance is " + String(obs[i]));
-//  }
+  int action = chooseAction(obs);
+  Serial.println("Action is " + String(action));
 
   Serial.println();
   delay(5000);
   delete[] obs;
+}
+
+
+int chooseAction(int *obs) {
+  int action = -1;
+  if (obs[1] > 10) {
+    Serial.println("Moving forward");
+    action = 0;
+  } else {
+    if (obs[0] >= obs[2]) {
+      Serial.println("Moving right");
+      action = 1;
+    } else {
+      Serial.println("Moving left");
+      action = 2;
+    }
+  }
+  return action;
 }
 
 
