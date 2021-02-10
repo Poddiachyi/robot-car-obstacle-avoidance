@@ -11,6 +11,13 @@ int outputPin = A1;  // ultrasonic module  TRIG to A1
 int servoPin = 3; 
 int turningAngle = 3;
 
+int wheelRF = 8;
+int wheelRB = 7;
+int wheelLF = 4;
+int wheelLB = 2;
+
+int rightSideENA = 10; // allows to control speed
+int leftSideENA = 5;
 
 const int numAngles = 3;
 int angles[numAngles] = {0, 90, 180};  // only three directions for now
@@ -19,6 +26,7 @@ int* lookAround();
 int lookInDirection(int angle);
 void resetServo();
 int chooseAction(int *obs);
+void moveForward();
 
 
 void setup() {
@@ -28,19 +36,43 @@ void setup() {
   
   pinMode(inputPin, INPUT);      
   pinMode(outputPin, OUTPUT); 
+
+  pinMode(wheelRF, OUTPUT);
+  pinMode(wheelRB, OUTPUT);
+  pinMode(wheelLF, OUTPUT);
+  pinMode(wheelLB, OUTPUT);
+  
+  pinMode(rightSideENA, OUTPUT);
+  pinMode(leftSideENA, OUTPUT);
+//
+  // setting speed
+  analogWrite(rightSideENA, 250);
+  analogWrite(leftSideENA, 250);
+
+  moveForward();  
 }
 
 void loop() {
-  int *obs = lookAround();
+  moveForward();
 
-  int action = chooseAction(obs);
-  Serial.println("Action is " + String(action));
-
-  Serial.println();
-  delay(5000);
-  delete[] obs;
+//  int *obs = lookAround();
+//
+//  int action = chooseAction(obs);
+//  Serial.println("Action is " + String(action));
+//
+//  Serial.println();
+//  delay(5000);
+//  delete[] obs;
 }
 
+
+void moveForward() {
+  digitalWrite(wheelRF, HIGH);
+  digitalWrite(wheelRB, LOW);
+
+  digitalWrite(wheelLF, HIGH);
+  digitalWrite(wheelLB, LOW);
+}
 
 int chooseAction(int *obs) {
   int action = -1;
