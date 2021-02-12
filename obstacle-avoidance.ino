@@ -3,21 +3,19 @@
 
 Servo servo;  
                                               
-int pos = 0; 
-
 int inputPin = A0;  // ultrasonic module   ECHO to A0
 int outputPin = A1;  // ultrasonic module  TRIG to A1 
 
 int servoPin = 3; 
 int turningAngle = 3;
 
-int wheelRF = 8;
-int wheelRB = 7;
-int wheelLF = 4;
-int wheelLB = 2;
+int wheelLF = 8;
+int wheelLB = 7;
+int wheelRF = 4;
+int wheelRB = 2;
 
-int rightSideENA = 10; // allows to control speed
-int leftSideENA = 5;
+int leftSideENA = 13; // allows to control speed
+int rightSideENA = 5;
 
 const int numAngles = 3;
 int angles[numAngles] = {0, 90, 180};  // only three directions for now
@@ -26,45 +24,36 @@ int* lookAround();
 int lookInDirection(int angle);
 void resetServo();
 int chooseAction(int *obs);
+void pinWheels();
+void setWheelsSpeed();
+
 void moveForward();
+void moveBackward();
+void turn90Right();
+void turn90Left();
+void stopMoving();
 
 
 void setup() {
   Serial.begin(9600);
-  
-  servo.attach(servoPin); 
-  
-  pinMode(inputPin, INPUT);      
-  pinMode(outputPin, OUTPUT); 
 
-  pinMode(wheelRF, OUTPUT);
-  pinMode(wheelRB, OUTPUT);
-  pinMode(wheelLF, OUTPUT);
-  pinMode(wheelLB, OUTPUT);
-  
-  pinMode(rightSideENA, OUTPUT);
-  pinMode(leftSideENA, OUTPUT);
-//
-  // setting speed
-  analogWrite(rightSideENA, 250);
-  analogWrite(leftSideENA, 250);
+  pinServoAndUltrSonic();
+  pinWheels();
+  setWheelsSpeed();
 
-  moveForward();  
 }
 
 void loop() {
-  moveForward();
 
-//  int *obs = lookAround();
-//
-//  int action = chooseAction(obs);
-//  Serial.println("Action is " + String(action));
-//
-//  Serial.println();
-//  delay(5000);
-//  delete[] obs;
+  int *obs = lookAround();
+
+  int action = chooseAction(obs);
+  Serial.println("Action is " + String(action));
+
+  Serial.println();
+  delay(5000);
+  delete[] obs;
 }
-
 
 void moveForward() {
   digitalWrite(wheelRF, HIGH);
@@ -72,6 +61,69 @@ void moveForward() {
 
   digitalWrite(wheelLF, HIGH);
   digitalWrite(wheelLB, LOW);
+}
+
+
+void moveBackward() {
+  digitalWrite(wheelRF, LOW);
+  digitalWrite(wheelRB, HIGH);
+
+  digitalWrite(wheelLF, LOW);
+  digitalWrite(wheelLB, HIGH);
+}
+
+void stopMoving() {
+  digitalWrite(wheelRF, HIGH);
+  digitalWrite(wheelRB, HIGH);
+
+  digitalWrite(wheelLF, HIGH);
+  digitalWrite(wheelLB, HIGH);
+}
+
+void turn90Left() {
+  digitalWrite(wheelRF, HIGH);
+  digitalWrite(wheelRB, LOW);
+
+  digitalWrite(wheelLF, LOW);
+  digitalWrite(wheelLB, HIGH);
+
+  delay(470); // for completing the maneuver
+  stopMoving();
+}
+
+void turn90Right() {
+  digitalWrite(wheelRF, LOW);
+  digitalWrite(wheelRB, HIGH);
+
+  digitalWrite(wheelLF, HIGH);
+  digitalWrite(wheelLB, LOW);
+
+  delay(700); // for completing the maneuver
+  stopMoving();
+}
+
+
+void pinServoAndUltrSonic() {
+  servo.attach(servoPin); 
+  pinMode(inputPin, INPUT);      
+  pinMode(outputPin, OUTPUT);   
+}
+
+
+void pinWheels() {
+  pinMode(wheelLF, OUTPUT);
+  pinMode(wheelLB, OUTPUT);
+  pinMode(wheelRF, OUTPUT);
+  pinMode(wheelRB, OUTPUT);
+
+  pinMode(leftSideENA, OUTPUT);  
+  pinMode(rightSideENA, OUTPUT); 
+}
+
+
+void setWheelsSpeed() {
+  analogWrite(rightSideENA, 250);
+  analogWrite(leftSideENA, 250);  
 }
 
 int chooseAction(int *obs) {
@@ -126,7 +178,6 @@ int lookInDirection(int angle) {
 }
 
 void resetServo() {
-//  Serial.println("Reseting");
   servo.write(90);
   delay(300);
 }
