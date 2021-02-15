@@ -19,6 +19,7 @@ int rightSideENA = 5;
 
 const int numAngles = 3;
 int angles[numAngles] = {0, 90, 180};  // only three directions for now
+const int radius = 15;
 
 int* lookAround();
 int lookInDirection(int angle);
@@ -29,8 +30,8 @@ void setWheelsSpeed();
 
 void moveForward();
 void moveBackward();
-void turn90Right();
-void turn90Left();
+void turn90right();
+void turn90left();
 void stopMoving();
 
 
@@ -45,14 +46,34 @@ void setup() {
 
 void loop() {
 
-  int *obs = lookAround();
 
-  int action = chooseAction(obs);
-  Serial.println("Action is " + String(action));
+  int distance = lookInDirection(90); 
 
-  Serial.println();
-  delay(5000);
-  delete[] obs;
+  if (distance > radius) {
+    Serial.println("Moving forward");
+    moveForward();
+  } else { 
+    stopMoving();
+    
+    int *obs = lookAround();
+  
+    int action = chooseAction(obs);
+    Serial.println("Action is " + String(action));
+    
+    if (action == 0) {
+      Serial.println("Moving turning rignt");
+      turn90right();
+    } else if (action == 1) {
+      Serial.println("Moving turning left");
+      turn90left();
+    } else if (action == 2) {
+      Serial.println("Moving backward");
+      moveBackward();
+    }
+    delete[] obs;
+  }
+
+  
 }
 
 void moveForward() {
@@ -80,7 +101,7 @@ void stopMoving() {
   digitalWrite(wheelLB, HIGH);
 }
 
-void turn90Left() {
+void turn90left() {
   digitalWrite(wheelRF, HIGH);
   digitalWrite(wheelRB, LOW);
 
@@ -91,14 +112,14 @@ void turn90Left() {
   stopMoving();
 }
 
-void turn90Right() {
+void turn90right() {
   digitalWrite(wheelRF, LOW);
   digitalWrite(wheelRB, HIGH);
 
   digitalWrite(wheelLF, HIGH);
   digitalWrite(wheelLB, LOW);
 
-  delay(700); // for completing the maneuver
+  delay(700); // for completing the maneuver, turning right takes more time
   stopMoving();
 }
 
@@ -128,18 +149,17 @@ void setWheelsSpeed() {
 
 int chooseAction(int *obs) {
   int action = -1;
-  if (obs[1] > 10) {
-    Serial.println("Moving forward");
-    action = 0;
-  } else {
-    if (obs[0] >= obs[2]) {
-      Serial.println("Moving right");
+
+  if (obs[0] >= obs[2] and obs[0] > radius) {
+      action = 0;
+    } 
+  else if (obs[2] > obs[0] and obs[2] > radius) {
       action = 1;
-    } else {
-      Serial.println("Moving left");
+    } 
+  else {
       action = 2;
     }
-  }
+//  }
   return action;
 }
 
