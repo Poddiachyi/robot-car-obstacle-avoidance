@@ -21,6 +21,8 @@ const int numAngles = 3;
 int angles[numAngles] = {0, 90, 180};  // only three directions for now
 const int radius = 15;
 
+int previousAction = -1;
+
 int* lookAround();
 int lookInDirection(int angle);
 void resetServo();
@@ -41,15 +43,13 @@ void setup() {
   pinServoAndUltrSonic();
   pinWheels();
   setWheelsSpeed();
-
 }
 
+
 void loop() {
-
-
   int distance = lookInDirection(90); 
 
-  if (distance > radius) {
+  if (distance > radius && previousAction != 2) {
     Serial.println("Moving forward");
     moveForward();
   } else { 
@@ -57,7 +57,7 @@ void loop() {
     
     int *obs = lookAround();
   
-    int action = chooseAction(obs);
+    int action = chooseAction(obs, previousAction);
     Serial.println("Action is " + String(action));
     
     if (action == 0) {
@@ -71,10 +71,11 @@ void loop() {
       moveBackward();
     }
     delete[] obs;
-  }
 
-  
+    previousAction = action;
+  }
 }
+
 
 void moveForward() {
   digitalWrite(wheelRF, HIGH);
@@ -93,6 +94,7 @@ void moveBackward() {
   digitalWrite(wheelLB, HIGH);
 }
 
+
 void stopMoving() {
   digitalWrite(wheelRF, HIGH);
   digitalWrite(wheelRB, HIGH);
@@ -101,6 +103,7 @@ void stopMoving() {
   digitalWrite(wheelLB, HIGH);
 }
 
+
 void turn90left() {
   digitalWrite(wheelRF, HIGH);
   digitalWrite(wheelRB, LOW);
@@ -108,9 +111,11 @@ void turn90left() {
   digitalWrite(wheelLF, LOW);
   digitalWrite(wheelLB, HIGH);
 
-  delay(470); // for completing the maneuver
+  // for whatever reason it turns left faster
+  delay(350); // for completing the maneuver
   stopMoving();
 }
+
 
 void turn90right() {
   digitalWrite(wheelRF, LOW);
@@ -119,7 +124,7 @@ void turn90right() {
   digitalWrite(wheelLF, HIGH);
   digitalWrite(wheelLB, LOW);
 
-  delay(700); // for completing the maneuver, turning right takes more time
+  delay(400); // for completing the maneuver, turning right takes more time
   stopMoving();
 }
 
@@ -147,9 +152,19 @@ void setWheelsSpeed() {
   analogWrite(leftSideENA, 250);  
 }
 
-int chooseAction(int *obs) {
+
+int chooseAction(int *obs, int previousAction) {
   int action = -1;
 
+  if (previousAction == 2) {
+    if (obs[0] >= obs[2]) {
+      return 0;
+    } 
+    else {
+      return 1;
+    }
+  }
+  
   if (obs[0] >= obs[2] and obs[0] > radius) {
       action = 0;
     } 
@@ -159,7 +174,6 @@ int chooseAction(int *obs) {
   else {
       action = 2;
     }
-//  }
   return action;
 }
 
